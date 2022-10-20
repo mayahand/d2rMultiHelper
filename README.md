@@ -8,7 +8,7 @@
 
    ![](./readme_resources/folder_example.png)
 
-3. D2R 폴더의 Diablo II Resurrected Launcher.exe를 실행 후 ㅠettle.net에 로그인해서 D2R을 실행한다
+3. D2R 폴더의 Diablo II Resurrected Launcher.exe를 실행 후 ettle.net에 로그인해서 D2R을 실행한다
 4. D2rMultiHelper 콘솔창 확인
 
    ![](./readme_resources/console2.png)
