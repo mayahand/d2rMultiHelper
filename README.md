@@ -14,6 +14,9 @@
    ![](./readme_resources/console2.png)
 
 5. D2R 클라이언트 윈도우 이름이 "D2R MultiLoaded by YMD2RML" 로 변경되어있으면 성공
+
+   ![](./readme_resources/window_example.png)
+
 6. 온라인 케릭터 선택 화면까지 진입
 
    (!!! 필수 - 케릭터 선택 화면까지 진입 하지 않고 다음 클라이언트를 실행하면 배틀넷 로그인이 꼬이는 경우가 있음)
