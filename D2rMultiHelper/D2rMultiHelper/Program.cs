@@ -34,7 +34,7 @@ namespace D2rMultiHelper
                 foreach (Process p in processList)
                 {
 
-                    if (newTitle.Equals(p.MainWindowTitle)) continue;
+                    if (newTitle.Equals(p.MainWindowTitle) || String.IsNullOrEmpty(p.MainWindowTitle)) continue;
 
                     IntPtr pSysHandles = ProcessManager.GetAllHandles();
 

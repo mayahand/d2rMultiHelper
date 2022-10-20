@@ -1,1 +1,4 @@
-/D2rMultiHelper/D2rMultiHelper/bin/
+/D2rMultiHelper/D2rMultiHelper/bin
+/D2rMultiHelper/D2rMultiHelper/obj
+/D2rMultiHelper/.vs
+/.idea
