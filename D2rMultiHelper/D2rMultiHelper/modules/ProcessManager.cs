@@ -147,30 +147,39 @@ namespace D2rMultiHelper.modules
 
             IntPtr pSysInfoBuffer = Marshal.AllocHGlobal(bufferSize);
 
-            NTSTATUS queryResult = NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemHandleInformation,
-                pSysInfoBuffer, bufferSize, out actualSize);
+            try
+            {
+                NTSTATUS queryResult = NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemHandleInformation,
+                                pSysInfoBuffer, bufferSize, out actualSize);
 
-            while (queryResult == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+                while (queryResult == NTSTATUS.STATUS_INFO_LENGTH_MISMATCH)
+                {
+                    Marshal.FreeHGlobal(pSysInfoBuffer);
+
+                    bufferSize = bufferSize + initialSize; // * 2;
+
+                    pSysInfoBuffer = Marshal.AllocHGlobal(bufferSize);
+
+                    queryResult = NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemHandleInformation,
+                        pSysInfoBuffer, bufferSize, out actualSize);
+                }
+
+                if (queryResult == NTSTATUS.STATUS_SUCCESS)
+                {
+                    return pSysInfoBuffer;
+                }
+                else
+                {
+                    Marshal.FreeHGlobal(pSysInfoBuffer);
+                    return IntPtr.Zero;
+                }
+            }
+            catch
             {
                 Marshal.FreeHGlobal(pSysInfoBuffer);
-
-                bufferSize = bufferSize + initialSize; // * 2;
-
-                pSysInfoBuffer = Marshal.AllocHGlobal(bufferSize);
-
-                queryResult = NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemHandleInformation,
-                    pSysInfoBuffer, bufferSize, out actualSize);
             }
 
-            if (queryResult == NTSTATUS.STATUS_SUCCESS)
-            {
-                return pSysInfoBuffer;
-            }
-            else
-            {
-                Marshal.FreeHGlobal(pSysInfoBuffer);
-                return IntPtr.Zero;
-            }
+            return IntPtr.Zero;
         }
         public static List<SYSTEM_HANDLE_INFORMATION> GetHandles(Process targetProcess, IntPtr pSysHandles)
         {
@@ -202,42 +211,42 @@ namespace D2rMultiHelper.modules
             return processHandles;
         }
 
-        public static int KillHandle(Process process, string handleName)
+        public static bool KillHandle(Process process, string handleName)
         {
-            int killedCount = 0;
-
+            bool sucess = false;
             IntPtr pSysHandles = GetAllHandles();
 
-            if (pSysHandles == IntPtr.Zero)
+            try
             {
-                return killedCount;
-            }
-            List<SYSTEM_HANDLE_INFORMATION> processHandles = GetHandles(process, pSysHandles);
-
-            Marshal.FreeHGlobal(pSysHandles);
-
-            UIntPtr hProcess = OpenProcess(ProcessAccessFlags.DupHandle, false, (uint)process.Id);
-
-            int i = 1;
-            int totalHandlesCount = processHandles.Count;
-
-            Console.WriteLine("["+process.MainWindowTitle+"] Scan for Check Instance Handle in ");
-            foreach (SYSTEM_HANDLE_INFORMATION handleInfo in processHandles)
-            {
-                Console.Write("\r{0}%", i*100/totalHandlesCount);
-                string name = GetHandleName(handleInfo, hProcess);
-                if (name.Contains(handleName))
+                
+                if (pSysHandles == IntPtr.Zero)
                 {
-                    if (CloseHandleEx(handleInfo.OwnerPID, new IntPtr(handleInfo.HandleValue)))
+                    return sucess;
+                }
+                List<SYSTEM_HANDLE_INFORMATION> processHandles = GetHandles(process, pSysHandles);
+
+                UIntPtr hProcess = OpenProcess(ProcessAccessFlags.DupHandle, false, (uint)process.Id);
+
+                foreach (SYSTEM_HANDLE_INFORMATION handleInfo in processHandles)
+                {
+                    string name = GetHandleName(handleInfo, hProcess);
+                    if (name.Contains(handleName))
                     {
-                        killedCount++;
+                        if (CloseHandleEx(handleInfo.OwnerPID, new IntPtr(handleInfo.HandleValue)))
+                        {
+                            sucess = true;
+                            break;
+                        }
                     }
                 }
-            }
-            Console.WriteLine("\r100% Complate", i, totalHandlesCount);
-            CloseHandle(hProcess);
+                CloseHandle(hProcess);
 
-            return killedCount;
+                return sucess;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(pSysHandles);
+            }
         }
         public static string GetHandleName(SYSTEM_HANDLE_INFORMATION targetHandleInfo, UIntPtr hProcess)
         {

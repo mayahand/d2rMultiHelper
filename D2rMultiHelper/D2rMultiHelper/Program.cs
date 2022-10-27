@@ -59,22 +59,20 @@ namespace D2rMultiHelper
                 foreach (Process p in processList)
                 {
 
-                    if (newTitle.Equals(p.MainWindowTitle) || String.IsNullOrEmpty(p.MainWindowTitle)) continue;
+                    //if (newTitle.Equals(p.MainWindowTitle) || String.IsNullOrEmpty(p.MainWindowTitle)) continue;
+                    if (String.IsNullOrEmpty(p.MainWindowTitle)) continue;
 
-                    IntPtr pSysHandles = ProcessManager.GetAllHandles();
+                    //IntPtr pSysHandles = ProcessManager.GetAllHandles();
 
-                    if (ProcessManager.KillHandle(p, "Instances") > 0)
+                    if (ProcessManager.KillHandle(p, "DiabloII Check For Other Instances"))
                     {
-                        Console.WriteLine("DiabloII Check For Other Instances Handle Killed");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Already DiabloII Check For Other Instances Handle Killed");
+                        Console.WriteLine("PID("+p.Id+") : DiabloII Check For Other Instances Handle Killed");
                     }
 
-                    SetWindowText(p.MainWindowHandle, newTitle);
+                    //SetWindowText(p.MainWindowHandle, newTitle);
                 }
 
+                GC.Collect();
                 Thread.Sleep(1000);
             }
         }
@@ -86,7 +84,9 @@ namespace D2rMultiHelper
             if (null != identity)
             {
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
+#pragma warning disable CA1416 // 플랫폼 호환성 유효성 검사
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
+#pragma warning restore CA1416 // 플랫폼 호환성 유효성 검사
             }
 
             return false;
